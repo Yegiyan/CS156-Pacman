@@ -11,8 +11,8 @@ This is a project for the CS-156 course, where we're creating a Pacman applicati
 
 ## Running the Program
 1. Ensure you're in the virtual environment: https://i.imgur.com/PY7zB60.png
-2. Import pyray: `pip import pyray`
-3. Run the `Main.py` file: `python.exe Main.py`
+2. Run the `Main.py` file: `python.exe Main.py`
+3. IF `pyray` not detected, then import it: `pip import pyray`
 
 ## Project Structure
 - `Main.py`: The main entry point of the application
