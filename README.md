@@ -12,7 +12,7 @@ This is a project for the CS-156 course, where we're creating a Pacman applicati
 ## Running the Program
 1. Ensure you're in the virtual environment: https://i.imgur.com/PY7zB60.png
 2. Run the `Main.py` file: `python.exe Main.py`
-3. IF `pyray` not detected, then import it: `pip import pyray`
+* IF `pyray` not detected, then import it: `pip import pyray`
 
 ## Project Structure
 - `Main.py`: The main entry point of the application
@@ -21,8 +21,11 @@ This is a project for the CS-156 course, where we're creating a Pacman applicati
 - `venv/`: Directory containing python virtual environment
 
 ## Raylib Resources
-- Original Raylib Docs: https://www.raylib.com/cheatsheet/cheatsheet.html
+- Raylib Docs: https://www.raylib.com/cheatsheet/cheatsheet.html
+- Raylib Examples: https://www.raylib.com/examples.html
+
 - Python Binding of Raylib Docs: https://electronstudio.github.io/raylib-python-cffi/
+- Pyray examples: https://github.com/electronstudio/raylib-python-cffi/tree/master/examples
 
 ## Contibutors
 - Hike Yegiyan
