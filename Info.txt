@@ -1,0 +1,5 @@
+Ghost Behavior: https://gameinternals.com/understanding-pac-man-ghost-behavior
+
+Professor will ask what representation scheme we used
+What search scheme did we use
+- Will ask what line of code does that (searching)
