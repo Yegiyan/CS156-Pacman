@@ -12,7 +12,7 @@ This is a project for the CS-156 course, where we're creating a Pacman applicati
 ## Running the Program
 1. Ensure you're in the virtual environment: https://i.imgur.com/PY7zB60.png
 2. Run the `Main.py` file: `python.exe Main.py`
-* IF `pyray` import not detected, then install it: `pip install raylib` in the virtual environment
+* IF `pyray` import not detected, then install it: `pip install raylib` while in the virtual environment
 
 ## Project Structure
 - `Main.py`: The main entry point of the application
