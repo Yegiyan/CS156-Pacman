@@ -1,5 +1,24 @@
 Ghost Behavior: https://gameinternals.com/understanding-pac-man-ghost-behavior
 
+Blinky (Red Ghost)
+    - Tends to chase directly behind Pac-Man
+    - Speed increases as fewer dots remain on the board
+    - Becomes more aggressive than the others when the number of dots left to eat decreases
+
+Pinky (Pink Ghost)
+    - Attempts to position itself in front of Pac-Man by using a 4 tiles offset in front of Pac-Man's current direction
+    - The ambush tactic is less effective in the corners
+
+Inky (Cyan Ghost)
+    - Movement is influenced by the position of both Pac-Man and Blinky, acting unpredictably
+    - His target tile is calculated with a combination of Pac-Man’s position and Blinky’s, making him the most unpredictable of the ghosts
+
+Clyde (Orange Ghost)
+    - Exhibits behavior that combines targeting Pac-Man like Blinky and escaping to the bottom left corner of the maze
+    - When Clyde is far from Pac-Man, he acts more like Blinky; when close, he tends to wander away towards his home corner
+
+==========
+
 Professor will ask 
     - what representation scheme we used
     - what search scheme we used
