@@ -28,8 +28,10 @@ pacman = Pacman.create_pacman(13, 23)
 
 # main game loop
 while not pr.window_should_close():
-    
+      
     # update
+    delta_time = pr.get_frame_time()
+    
     if pr.is_key_pressed(pr.KEY_UP) or pr.is_key_pressed(pr.KEY_W):
         pacman['queued_direction'] = 'UP'
     elif pr.is_key_pressed(pr.KEY_DOWN) or pr.is_key_pressed(pr.KEY_S):
@@ -39,7 +41,6 @@ while not pr.window_should_close():
     elif pr.is_key_pressed(pr.KEY_RIGHT) or pr.is_key_pressed(pr.KEY_D):
         pacman['queued_direction'] = 'RIGHT'
 
-        
     Pacman.move_pacman(pacman, Maze)
     
     # draw
@@ -49,7 +50,7 @@ while not pr.window_should_close():
     pr.draw_text_ex(font, "HIGH SCORE", pr.Vector2(216, 10), 24, 2, pr.WHITE)
     pr.draw_text_ex(font, "1UP", pr.Vector2(50, 10), 24, 2, pr.WHITE)
 
-    Maze.draw_grid(grid)
+    #Maze.draw_grid(grid)
     Pacman.draw_pacman(pacman, pacman_texture)
 
     pr.end_drawing()
