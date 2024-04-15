@@ -76,5 +76,5 @@ def draw_grid(grid):
     vertical_offset = 87
     for row in grid:
         for cell in row:
-            color = pr.DARKGREEN if not cell.set_wall else (0, 0, 0, 255)
+            color = pr.DARKGREEN if not cell.set_wall else (pr.DARKBROWN)
             pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, color)
