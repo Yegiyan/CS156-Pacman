@@ -34,14 +34,7 @@ maze_layout = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
 
 class Cell:
-    def __init__(self, row, col, size=24, is_wall=False):
-        """
-        Initialize a new Cell instance with the top left corner set as (0, 0).
-        :param row: int, the row index in the grid, where 0 is the top row
-        :param col: int, the column index in the grid, where 0 is the left column
-        :param size: int, the height and width of the cell in pixels
-        :param is_wall: bool, True if the cell is a wall, False otherwise (default is False)
-        """
+    def __init__(self, row, col, size=24, is_wall=False): # initialize new Cell instance with top left corner set as (row, col) > (0, 0)
         self.x = col * size  # x-coordinate in pixels
         self.y = row * size  # y-coordinate in pixels
         self.size = size
@@ -53,25 +46,22 @@ class Cell:
     def __repr__(self):
         return f"Cell(row={self.row}, col={self.col}, size={self.size}, is_wall={self.set_wall})"
 
-def Grid(screen_width, screen_height):
+def init_grid(screen_width, screen_height):
     cell_size = 24
     grid_width = len(maze_layout[0])
     grid_height = len(maze_layout)
     vertical_offset = 87  # center grid vertically
-
-    # initialize grid
-    grid = [[Cell(row, col, cell_size, is_wall=(maze_layout[row][col] == 1)) for col in range(grid_width)] for row in range(grid_height)]
-
-    # draw the grid
-    for row in grid:
-        for cell in row:
-            color = pr.DARKGREEN if not cell.set_wall else pr.DARKBROWN
-            pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, color)
+    
+    # Initialize grid
+    grid = [[Cell(row, col, cell_size, is_wall=(maze_layout[row][col] == 1))
+             for col in range(grid_width)] for row in range(grid_height)]
+    
+    return grid
             
 def is_wall(x, y):
-    return maze_layout[y][x] == 1
+    return maze_layout[x][y] == 1
 
-def is_wall_in_direction(x, y, direction):
+def is_direction_blocked(x, y, direction):
     if direction == 'UP':
         return maze_layout[y-1][x] == 1
     elif direction == 'DOWN':
@@ -81,3 +71,10 @@ def is_wall_in_direction(x, y, direction):
     elif direction == 'RIGHT':
         return maze_layout[y][x+1] == 1
     return False
+
+def draw_grid(grid):
+    vertical_offset = 87
+    for row in grid:
+        for cell in row:
+            color = pr.DARKGREEN if not cell.set_wall else (0, 0, 0, 255)
+            pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, color)

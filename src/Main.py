@@ -1,6 +1,5 @@
 import pyray as pr
-import Maze
-import Pacman
+import Maze, Pacman
 
 # window size
 SCREEN_WIDTH = 672
@@ -23,31 +22,35 @@ maze_dest_rect = pr.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
 pacman_sprite = pr.load_image("../assets/images/sprites.png")
 pacman_texture = pr.load_texture_from_image(pacman_sprite)
+
+grid = Maze.init_grid(SCREEN_WIDTH, SCREEN_HEIGHT)
 pacman = Pacman.create_pacman(13, 23)
 
 # main game loop
 while not pr.window_should_close():
+    
+    # update
+    if pr.is_key_pressed(pr.KEY_UP) or pr.is_key_pressed(pr.KEY_W):
+        pacman['queued_direction'] = 'UP'
+    elif pr.is_key_pressed(pr.KEY_DOWN) or pr.is_key_pressed(pr.KEY_S):
+        pacman['queued_direction'] = 'DOWN'
+    elif pr.is_key_pressed(pr.KEY_LEFT) or pr.is_key_pressed(pr.KEY_A):
+        pacman['queued_direction'] = 'LEFT'
+    elif pr.is_key_pressed(pr.KEY_RIGHT) or pr.is_key_pressed(pr.KEY_D):
+        pacman['queued_direction'] = 'RIGHT'
+
+        
+    Pacman.move_pacman(pacman, Maze)
+    
+    # draw
     pr.begin_drawing()
     pr.clear_background(pr.BLACK)
     pr.draw_texture_pro(maze_text, maze_src_rect, maze_dest_rect, pr.Vector2(0, 0), 0, pr.WHITE)
     pr.draw_text_ex(font, "HIGH SCORE", pr.Vector2(216, 10), 24, 2, pr.WHITE)
     pr.draw_text_ex(font, "1UP", pr.Vector2(50, 10), 24, 2, pr.WHITE)
 
-    Maze.Grid(SCREEN_WIDTH, SCREEN_HEIGHT)
-    
-    if pr.is_key_pressed(pr.KEY_UP):
-        pacman['queued_direction'] = 'UP'
-    elif pr.is_key_pressed(pr.KEY_DOWN):
-        pacman['queued_direction'] = 'DOWN'
-    elif pr.is_key_pressed(pr.KEY_LEFT):
-        pacman['queued_direction'] = 'LEFT'
-    elif pr.is_key_pressed(pr.KEY_RIGHT):
-        pacman['queued_direction'] = 'RIGHT'
-
-    Pacman.move_pacman(pacman, Maze)
-    
-    pacman_dest_rect = pr.Rectangle(pacman['x'], pacman['y'], pacman['size'], pacman['size'])
-    pr.draw_texture_pro(pacman_texture, pacman['sprite_region'], pacman_dest_rect, pr.Vector2(0, 0), 0, pr.YELLOW)
+    Maze.draw_grid(grid)
+    Pacman.draw_pacman(pacman, pacman_texture)
 
     pr.end_drawing()
 
