@@ -1,5 +1,5 @@
 import pyray as pr
-import Grid
+import Maze
 
 # window size
 SCREEN_WIDTH = 672
@@ -28,7 +28,7 @@ while not pr.window_should_close():
     pr.draw_text_ex(font, "HIGH SCORE", pr.Vector2(216, 10), 24, 2, pr.WHITE)
     pr.draw_text_ex(font, "1UP", pr.Vector2(50, 10), 24, 2, pr.WHITE)
 
-    Grid.GridTest(SCREEN_WIDTH, SCREEN_HEIGHT)
+    Maze.Grid(SCREEN_WIDTH, SCREEN_HEIGHT)
 
     pr.end_drawing()
 
