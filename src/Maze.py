@@ -13,6 +13,14 @@ import heapq
 #      blinky
 # inky pinky clyde
 
+# top right:  (26, 1)
+# top  left:   (1, 1)
+# bot right: (26, 29)
+# bot  left:  (1, 29)
+
+# blinky spawn: (13, 11)
+# pacman spawn: (13, 23)
+
 maze_layout = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
