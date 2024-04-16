@@ -119,7 +119,9 @@ def clear_path(grid):
     for row in grid:
         for cell in row:
             cell.in_path = False
-            cell.visited = False  # reset if it affects drawing logic
+            cell.visited = False
+            cell.cost = float('inf')  # reset cost to infinity
+            cell.previous = None      # clear path that was previously computed
 
 def get_neighbors(grid, cell):
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # down, right, up, left
