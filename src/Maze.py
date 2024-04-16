@@ -8,6 +8,11 @@ import heapq
 # 4 = fruit
 # 5 = ghost wall
 
+# ghost starting positions (in box)
+#
+#      blinky
+# inky pinky clyde
+
 maze_layout = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -120,7 +125,7 @@ def clear_path(grid):
         for cell in row:
             cell.in_path = False
             cell.visited = False
-            cell.cost = float('inf')  # reset cost to infinity
+            cell.cost = float('inf')  # reset cost to infinity (ensures next run starts with a clean slate)
             cell.previous = None      # clear path that was previously computed
 
 def get_neighbors(grid, cell):
@@ -156,7 +161,7 @@ def draw_grid(grid, vertical_offset=87):
     for row in grid:
         for cell in row:
             if cell.is_wall:
-                color = (0, 0, 0, 0)  # wall color
+                color = (0, 0, 0, 0)  # wall color (invisible atm)
             elif cell.in_path:
                 color = pr.DARKGREEN  # path color
             else:

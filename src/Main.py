@@ -43,6 +43,7 @@ while not pr.window_should_close():
 
     Pacman.move_pacman(pacman, Maze)
     
+    # Test run, starts at (1,1) and paths to current pacman position
     Maze.clear_path(grid)
     start = grid[1][1]
     pacman_row, pacman_col = pacman['grid_pos']
