@@ -7,8 +7,8 @@ def create_pacman(grid_x, grid_y, cell_size=24, scale=2.85, vertical_offset=87, 
         'y': vertical_offset + grid_y * cell_size + (cell_size - scaled_size) / 2,
         'size': scaled_size,
         'grid_pos': (grid_x, grid_y),
-        'old_x': horizontal_offset + grid_x * cell_size + (cell_size - scaled_size) / 2,  # Old position for interpolation
-        'old_y': vertical_offset + grid_y * cell_size + (cell_size - scaled_size) / 2,  # Old position for interpolation
+        'old_x': horizontal_offset + grid_x * cell_size + (cell_size - scaled_size) / 2,  # old position for interpolation
+        'old_y': vertical_offset + grid_y * cell_size + (cell_size - scaled_size) / 2,  # old position for interpolation
         'current_direction': 'STOP',
         'queued_direction': 'STOP',
         'speed': 8,
@@ -29,14 +29,14 @@ def move_pacman(pacman, maze, vertical_offset=87, horizontal_offset=0):
     queued_dir = pacman['queued_direction']
 
     if current_time - pacman['last_move_time'] > 1 / pacman['speed']:
-        # Save old positions for interpolation
+        # save old positions for interpolation
         pacman['old_x'] = pacman['x']
         pacman['old_y'] = pacman['y']
 
         # handle tunnel teleporting
-        if (grid_y, grid_x) == (14, 0) and current_dir == 'LEFT':
+        if (grid_x, grid_y) == (0, 14) and current_dir == 'LEFT':
             grid_x = 26
-        elif (grid_y, grid_x) == (14, 27) and current_dir == 'RIGHT':
+        elif (grid_x, grid_y) == (27, 14) and current_dir == 'RIGHT':
             grid_x = 1
         else:
             effective_dir = queued_dir if not maze.is_direction_blocked(grid_x, grid_y, queued_dir) else current_dir
@@ -69,7 +69,7 @@ def draw_pacman(pacman, pacman_texture):
     current_time = pr.get_time()
     time_since_last_move = current_time - pacman['last_move_time']
     move_interval = 1 / pacman['speed']
-    time_fraction = min(time_since_last_move / move_interval, 1)  # Clamp to 1 to avoid overshooting
+    time_fraction = min(time_since_last_move / move_interval, 1)  # clamp to 1 to avoid overshooting
 
     # interpolated position
     interpolated_x = pacman['old_x'] + (pacman['x'] - pacman['old_x']) * time_fraction

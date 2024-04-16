@@ -42,7 +42,7 @@ maze_layout = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
 
 class Cell:
-    def __init__(self, row, col, size=24, is_wall=False): # initialize new Cell instance with top left corner set as (row, col) > (0, 0)
+    def __init__(self, row, col, size=24, is_wall=False): # initialize new Cell instance with top left corner set as (row, col) -> (0, 0)
         self.col = col  # x position in grid
         self.row = row  # y position in grid
         self.x = col * size  # x-coordinate in pixels
@@ -82,7 +82,7 @@ def init_grid(screen_width, screen_height):
 def dijkstra(grid, start, end):
     start.cost = 0
     pq = []
-    heapq.heappush(pq, (start.cost, start.row, start.col))  # Use row and column as identifiers
+    heapq.heappush(pq, (start.cost, start.row, start.col))  # use row and column as identifiers
 
     while pq:
         current_cost, row, col = heapq.heappop(pq)
@@ -90,14 +90,14 @@ def dijkstra(grid, start, end):
         if current.visited:
             continue
         current.visited = True
-
+        
         if current == end:
             break
 
         for neighbor in get_neighbors(grid, current):
             if neighbor.visited:
                 continue
-            new_cost = current_cost + 1  # Assuming each step cost is 1
+            new_cost = current_cost + 1  # each step cost is 1
             if new_cost < neighbor.cost:
                 neighbor.cost = new_cost
                 neighbor.previous = current
@@ -115,14 +115,25 @@ def reconstruct_path(end):
     path.reverse()
     return path
 
+def clear_path(grid):
+    for row in grid:
+        for cell in row:
+            cell.in_path = False
+            cell.visited = False  # reset if it affects drawing logic
+
 def get_neighbors(grid, cell):
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Down, Right, Up, Left
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # down, right, up, left
     neighbors = []
+    max_row, max_col = len(grid), len(grid[0])
     for dx, dy in directions:
         nx, ny = cell.col + dx, cell.row + dy
-        if 0 <= nx < len(grid[0]) and 0 <= ny < len(grid):
-            if not grid[ny][nx].is_wall:
-                neighbors.append(grid[ny][nx])
+        
+        # wrap around logic for tunnels
+        nx = nx % max_col
+
+        if 0 <= nx < max_col and 0 <= ny < max_row and not grid[ny][nx].is_wall:
+            neighbors.append(grid[ny][nx])
+            
     return neighbors
 
 def is_wall(x, y):
@@ -139,14 +150,13 @@ def is_direction_blocked(x, y, direction):
         return maze_layout[y][x+1] == 1 or maze_layout[y][x+1] == 5
     return False
 
-def draw_grid(grid):
-    vertical_offset = 87
+def draw_grid(grid, vertical_offset=87):
     for row in grid:
         for cell in row:
             if cell.is_wall:
-                color = (0, 0, 0, 0)
+                color = (0, 0, 0, 0)  # wall color
             elif cell.in_path:
-                color = pr.PURPLE  # path color
+                color = pr.DARKGREEN  # path color
             else:
-                color = pr.DARKPURPLE if cell.visited else pr.DARKBROWN
+                color = pr.DARKBROWN  # non-path color
             pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, color)

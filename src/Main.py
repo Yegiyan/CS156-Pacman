@@ -43,6 +43,14 @@ while not pr.window_should_close():
 
     Pacman.move_pacman(pacman, Maze)
     
+    Maze.clear_path(grid)
+    start = grid[1][1]
+    pacman_row, pacman_col = pacman['grid_pos']
+    end = grid[pacman_col][pacman_row]
+    
+    search = Maze.dijkstra(grid, start, end)
+    path = Maze.reconstruct_path(end)
+    
     # draw
     pr.begin_drawing()
     pr.clear_background(pr.BLACK)
