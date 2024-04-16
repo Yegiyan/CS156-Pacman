@@ -58,6 +58,45 @@
 ### Ghost Release from the Pen
 - Ghosts are initially confined in the central pen and begin to leave one by one
 
+## Pac-Man's Scoring Logic
+
+### Pellets
+There are two types of pellets in Pac-Man:
+
+- **Small Pellets (Dots)**
+  - **10 points** are awarded for each small pellet Pac-Man eats
+  - There are typically **240 small pellets** on each level
+
+- **Power Pellets (Energizers)**
+  - **50 points** are awarded for each power pellet Pac-Man eats
+  - There are usually **4 power pellets** on each level
+  - Consuming a power pellet also turns the ghosts blue for a limited time, allowing Pac-Man to eat them for extra points
+
+### Ghosts
+The points for eating ghosts after consuming a power pellet increase exponentially with each consecutive ghost:
+
+- **First ghost**: 200 points
+- **Second ghost**: 400 points
+- **Third ghost**: 800 points
+- **Fourth ghost**: 1600 points
+
+The score resets with each new power pellet consumed
+
+### Fruit Bonuses
+Fruits appear near the center of the maze and provide additional points when eaten:
+
+- **Cherries**: 100 points (1st level)
+- **Strawberry**: 300 points (2nd level)
+- **Orange**: 500 points (3rd and 4th levels)
+- **Apple**: 700 points (5th and 6th levels)
+- **Melon**: 1000 points (7th and 8th levels)
+- **Galaxian Boss**: 2000 points (9th and 10th levels)
+- **Bell**: 3000 points (11th and 12th levels)
+- **Key**: 5000 points (13th level onwards)
+
+### Additional Points
+- Completing a level by eating all pellets does not directly score extra points but allows progression to the next level where more points can be earned
+
 ## PROJECT INFO
 
 **Professor will ask:**
