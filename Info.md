@@ -58,7 +58,7 @@
 ### Ghost Release from the Pen
 - Ghosts are initially confined in the central pen and begin to leave one by one
 
-## Pac-Man's Scoring Logic
+## SCORING LOGIC
 
 ### Pellets
 There are two types of pellets in Pac-Man:
