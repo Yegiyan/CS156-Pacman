@@ -1,5 +1,5 @@
 import pyray as pr
-import Maze, Pacman
+import Maze, Pacman, Ghost
 
 # window size
 SCREEN_WIDTH = 672
@@ -20,11 +20,13 @@ font = pr.load_font("../assets/font/PressStart2P.ttf")
 maze_src_rect = pr.Rectangle(0, 0, maze_img.width, maze_img.height)
 maze_dest_rect = pr.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-sprite_atlas = pr.load_image("../assets/images/sprites.png")
-pacman_texture = pr.load_texture_from_image(sprite_atlas)
+texture_image = pr.load_image("../assets/images/sprites.png")
+texture_atlas = pr.load_texture_from_image(texture_image)
 
 grid = Maze.init_grid(SCREEN_WIDTH, SCREEN_HEIGHT)
 pacman = Pacman.create_pacman(13, 23)
+
+blinky = Ghost.create_blinky()
 
 # main game loop
 while not pr.window_should_close():
@@ -43,14 +45,9 @@ while not pr.window_should_close():
 
     Pacman.move_pacman(pacman, Maze)
     
-    # test run, starts at (1,1) and paths to current pacman position
-    Maze.clear_path(grid)
-    start = grid[1][1]
-    pacman_row, pacman_col = pacman['grid_pos']
-    end = grid[pacman_col][pacman_row]
-    
-    search = Maze.dijkstra(grid, start, end)
-    path = Maze.reconstruct_path(end)
+    if not blinky.path:
+        blinky.find_new_path(grid, Maze)
+    blinky.update_position() 
     
     # draw
     pr.begin_drawing()
@@ -60,7 +57,8 @@ while not pr.window_should_close():
     pr.draw_text_ex(font, "1UP", pr.Vector2(50, 10), 24, 2, pr.WHITE)
 
     Maze.draw_grid(grid)
-    Pacman.draw_pacman(pacman, pacman_texture)
+    Pacman.draw_pacman(pacman, texture_atlas)
+    blinky.draw_ghost(texture_atlas)
 
     pr.end_drawing()
 
@@ -68,7 +66,7 @@ while not pr.window_should_close():
 pr.unload_image(icon)
 pr.unload_image(maze_img)
 pr.unload_texture(maze_text)
-pr.unload_image(sprite_atlas)
-pr.unload_texture(pacman_texture)
+pr.unload_image(texture_image)
+pr.unload_texture(texture_atlas)
 pr.unload_font(font)
 pr.close_window()
