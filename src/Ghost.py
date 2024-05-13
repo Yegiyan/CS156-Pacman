@@ -78,16 +78,29 @@ class Ghost:
             pass
             
         if self.name == "Inky":
-            # specific pinky chase pathing here
+            # specific inky chase pathing here
             pass
             
         if self.name == "Clyde":
-            # specific pinky chase pathing here
+            # specific clyde chase pathing here
             pass
         
     def scatter(self, grid, maze_module):
-        # define scatter behavior, where ghosts move towards fixed corners
-        pass
+        if self.name == "Blinky":
+            # specific blinky scatter pathing here
+            pass
+            
+        if self.name == "Pinky":
+            # specific pinky scatter pathing here
+            pass
+            
+        if self.name == "Inky":
+            # specific inky scatter pathing here
+            pass
+            
+        if self.name == "Clyde":
+            # specific clyde scatter pathing here
+            pass
         
     def frightened(self, grid, maze_module):
         non_wall_cells = [cell for row in grid for cell in row if not cell.is_wall]
