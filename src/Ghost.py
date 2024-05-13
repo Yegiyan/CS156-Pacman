@@ -1,8 +1,9 @@
 import pyray as pr
 import random
+import time
 
 class Ghost:
-    def __init__(self, name, pos, grid_cell_size, color, base_sprite_coords, sprite_size, scale=1.0, speed=0.25):
+    def __init__(self, name, pos, grid_cell_size, color, base_sprite_coords, sprite_size, scale=1.0, speed=0.35):
         self.name = name
         self.grid_pos = pos
         self.target_pos = pos
@@ -20,8 +21,12 @@ class Ghost:
         self.direction = 'UP'
         self.just_changed_path = False
         self.mode = 'chase'
+        self.update_interval = 1.0  # interval in seconds for updating the path
+        self.last_update_time = time.time()
 
     def update_position(self, pacman_pos, grid, maze_module):
+        current_time = time.time()
+        
         if self.mode == 'frightened':
             if not self.path:
                 self.frightened(grid, maze_module)
@@ -31,6 +36,10 @@ class Ghost:
         elif self.mode == 'chase':
             if not self.path:
                 self.chase(pacman_pos, grid, maze_module)
+        
+        if current_time - self.last_update_time > self.update_interval or not self.path:
+            self.chase(pacman_pos, grid, maze_module)
+            self.last_update_time = current_time
         
         max_cols = 30
         if self.path and self.move_timer >= 1:
