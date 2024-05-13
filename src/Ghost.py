@@ -61,6 +61,33 @@ class Ghost:
             self.direction = 'LEFT'
         elif next_step[1] > self.grid_pos[1]:
             self.direction = 'RIGHT'
+
+    def chase(self, pacman_pos, grid, maze_module):
+        if self.name == "Blinky":
+            start = grid[self.grid_pos[0]][self.grid_pos[1]]
+            target = grid[pacman_pos[1]][pacman_pos[0]]
+            maze_module.clear_path(grid)
+            maze_module.dijkstra(grid, start, target)
+            path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+            if path and path[0] == self.grid_pos:
+                path.pop(0)
+            self.path = path
+            
+        if self.name == "Pinky":
+            # specific pinky chase pathing here
+            pass
+            
+        if self.name == "Inky":
+            # specific pinky chase pathing here
+            pass
+            
+        if self.name == "Clyde":
+            # specific pinky chase pathing here
+            pass
+        
+    def scatter(self, grid, maze_module):
+        # define scatter behavior, where ghosts move towards fixed corners
+        pass
         
     def frightened(self, grid, maze_module):
         non_wall_cells = [cell for row in grid for cell in row if not cell.is_wall]
@@ -69,24 +96,6 @@ class Ghost:
         maze_module.clear_path(grid)
         maze_module.dijkstra(grid, start, destination)
         self.path = [(step.row, step.col) for step in maze_module.reconstruct_path(destination)]
-
-    def chase(self, pacman_pos, grid, maze_module):
-        start = grid[self.grid_pos[0]][self.grid_pos[1]]
-        target = grid[pacman_pos[1]][pacman_pos[0]]
-
-        maze_module.clear_path(grid)
-        maze_module.dijkstra(grid, start, target)
-        path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
-
-        # Remove the first cell in the path if it is the current position of the ghost
-        if path and path[0] == self.grid_pos:
-            path.pop(0)
-
-        self.path = path
-        
-    def scatter(self, grid, maze_module):
-        # define scatter behavior, where ghosts move towards fixed corners
-        pass
         
     def get_center_position(self, vertical_offset):
         # interpolate positions between current and target based on move_timer
@@ -112,15 +121,13 @@ class Ghost:
         sprite_rect = pr.Rectangle(sprite_x, self.base_sprite_coords[1], self.sprite_size[0], self.sprite_size[1])
         dest_rect = pr.Rectangle(center_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
 
-        # Check if the ghost should wrap around the screen
+        # check if the ghost should wrap around the screen
         if self.should_wrap(self.grid_pos, self.target_pos, max_cols):
-            if self.direction == 'LEFT':
-                # If moving left through the tunnel, draw on the right side
+            if self.direction == 'LEFT': # if moving left through the tunnel, draw on the right side
                 wrap_x = (max_cols * self.grid_cell_size) + center_x
                 wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
                 pr.draw_texture_pro(texture, sprite_rect, wrap_rect, pr.Vector2(0, 0), 0, self.color)
-            elif self.direction == 'RIGHT':
-                # If moving right through the tunnel, draw on the left side
+            elif self.direction == 'RIGHT': # if moving right through the tunnel, draw on the left side
                 wrap_x = center_x - (max_cols * self.grid_cell_size)
                 wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
                 pr.draw_texture_pro(texture, sprite_rect, wrap_rect, pr.Vector2(0, 0), 0, self.color)
@@ -134,4 +141,13 @@ class Ghost:
             self.animation_timer = 0  # reset animation timer
 
 def create_blinky():
-    return Ghost("Blinky", (14, 13), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.14)
+    return Ghost("Blinky", (14, 13), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
+
+def create_pinky():
+    return Ghost("Pinky", (14, 13), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
+
+def create_inky():
+    return Ghost("Inky", (14, 13), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
+
+def create_clyde():
+    return Ghost("Clyde", (14, 13), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
