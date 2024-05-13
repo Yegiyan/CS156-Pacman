@@ -45,9 +45,7 @@ while not pr.window_should_close():
 
     Pacman.move_pacman(pacman, Maze)
     
-    if not blinky.path:
-        blinky.find_new_path(grid, Maze)
-    blinky.update_position() 
+    blinky.update_position(pacman['grid_pos'], grid, Maze)
     
     # draw
     pr.begin_drawing()
