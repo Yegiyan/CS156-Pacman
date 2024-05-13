@@ -21,12 +21,12 @@ class Ghost:
         self.direction = 'UP'
         self.just_changed_path = False
         self.mode = 'chase'
-        self.update_interval = 1.0  # interval in seconds for updating the path
+        self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
 
     def update_position(self, pacman_pos, grid, maze_module):
         current_time = time.time()
-        
+    
         if self.mode == 'frightened':
             if not self.path:
                 self.frightened(grid, maze_module)
@@ -34,35 +34,33 @@ class Ghost:
             if not self.path:
                 self.scatter(grid, maze_module)
         elif self.mode == 'chase':
-            if not self.path:
+            if not self.path or (current_time - self.last_update_time > self.update_interval):
                 self.chase(pacman_pos, grid, maze_module)
-        
-        if current_time - self.last_update_time > self.update_interval or not self.path:
-            self.chase(pacman_pos, grid, maze_module)
-            self.last_update_time = current_time
-        
-        max_cols = 30
-        if self.path and self.move_timer >= 1:
-            next_step = self.path[0]  # get next step but do not pop it yet
-            if self.should_wrap(self.grid_pos, next_step, max_cols):
-                self.grid_pos = next_step  # instantly update to next position
-                self.path.pop(0)  # remove step from path
-                self.target_pos = self.grid_pos  # reset target position
+                self.last_update_time = current_time
+    
+        if self.path:
+            next_step = self.path[0]  # peek next step
+            if self.grid_pos == pacman_pos:
+                self.path = []  # clear path if reached target
+            elif self.move_timer >= 1:
+                self.grid_pos = self.path.pop(0)  # move to next step
+                if self.path:
+                    self.target_pos = self.path[0]
                 self.move_timer = 0  # reset move timer
-            else:
-                self.grid_pos = self.target_pos  # update current to target if not wrapping
-                self.target_pos = self.path.pop(0)  # set new target position
-                self.move_timer -= 1  # reset move timer for interpolation
 
-            if next_step[0] < self.grid_pos[0]:
-                self.direction = 'UP'
-            elif next_step[0] > self.grid_pos[0]:
-                self.direction = 'DOWN'
-            elif next_step[1] < self.grid_pos[1]:
-                self.direction = 'LEFT'
-            elif next_step[1] > self.grid_pos[1]:
-                self.direction = 'RIGHT'
+            self.update_direction(next_step)
+
         self.move_timer += self.speed  # increment move timer by speed
+
+    def update_direction(self, next_step):
+        if next_step[0] < self.grid_pos[0]:
+            self.direction = 'UP'
+        elif next_step[0] > self.grid_pos[0]:
+            self.direction = 'DOWN'
+        elif next_step[1] < self.grid_pos[1]:
+            self.direction = 'LEFT'
+        elif next_step[1] > self.grid_pos[1]:
+            self.direction = 'RIGHT'
         
     def frightened(self, grid, maze_module):
         non_wall_cells = [cell for row in grid for cell in row if not cell.is_wall]
@@ -78,7 +76,13 @@ class Ghost:
 
         maze_module.clear_path(grid)
         maze_module.dijkstra(grid, start, target)
-        self.path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+        path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+
+        # Remove the first cell in the path if it is the current position of the ghost
+        if path and path[0] == self.grid_pos:
+            path.pop(0)
+
+        self.path = path
         
     def scatter(self, grid, maze_module):
         # define scatter behavior, where ghosts move towards fixed corners
@@ -99,7 +103,7 @@ class Ghost:
     def should_wrap(self, current_pos, next_pos, max_cols):
         return abs(current_pos[1] - next_pos[1]) > 1 and (current_pos[1] == 0 or next_pos[1] == 0 or current_pos[1] == max_cols-1 or next_pos[1] == max_cols-1)
         
-    def draw_ghost(self, texture, vertical_offset=87):
+    def draw_ghost(self, texture, vertical_offset=87, max_cols=28):
         frame_offset = {'UP': 0, 'DOWN': 2, 'LEFT': 4, 'RIGHT': 6}
         frame_num = frame_offset[self.direction] + self.current_frame
         sprite_x = self.base_sprite_coords[0] + frame_num * 20  # calculate x position of the frame
@@ -107,7 +111,21 @@ class Ghost:
         center_x, center_y = self.get_center_position(vertical_offset)
         sprite_rect = pr.Rectangle(sprite_x, self.base_sprite_coords[1], self.sprite_size[0], self.sprite_size[1])
         dest_rect = pr.Rectangle(center_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
-        pr.draw_texture_pro(texture, sprite_rect, dest_rect, pr.Vector2(0, 0), 0, self.color)
+
+        # Check if the ghost should wrap around the screen
+        if self.should_wrap(self.grid_pos, self.target_pos, max_cols):
+            if self.direction == 'LEFT':
+                # If moving left through the tunnel, draw on the right side
+                wrap_x = (max_cols * self.grid_cell_size) + center_x
+                wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
+                pr.draw_texture_pro(texture, sprite_rect, wrap_rect, pr.Vector2(0, 0), 0, self.color)
+            elif self.direction == 'RIGHT':
+                # If moving right through the tunnel, draw on the left side
+                wrap_x = center_x - (max_cols * self.grid_cell_size)
+                wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
+                pr.draw_texture_pro(texture, sprite_rect, wrap_rect, pr.Vector2(0, 0), 0, self.color)
+        else:
+            pr.draw_texture_pro(texture, sprite_rect, dest_rect, pr.Vector2(0, 0), 0, self.color)
 
         # update animation based on animation speed timer
         self.animation_timer += 1
@@ -116,4 +134,4 @@ class Ghost:
             self.animation_timer = 0  # reset animation timer
 
 def create_blinky():
-    return Ghost("Blinky", (14, 13), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1)
+    return Ghost("Blinky", (14, 13), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.14)
