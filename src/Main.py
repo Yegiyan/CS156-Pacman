@@ -27,6 +27,9 @@ grid = Maze.init_grid(SCREEN_WIDTH, SCREEN_HEIGHT)
 pacman = Pacman.create_pacman(13, 23)
 
 blinky = Ghost.create_blinky()
+pinky = Ghost.create_pinky()
+inky = Ghost.create_inky()
+clyde = Ghost.create_clyde()
 
 # main game loop
 while not pr.window_should_close():
@@ -44,8 +47,13 @@ while not pr.window_should_close():
         pacman['queued_direction'] = 'RIGHT'
 
     Pacman.move_pacman(pacman, Maze)
-    print(f"Pacman at position: {pacman['grid_pos']}")
+    
     blinky.update_position(pacman['grid_pos'], grid, Maze)
+    pinky.update_position(pacman['grid_pos'], grid, Maze)
+    inky.update_position(pacman['grid_pos'], grid, Maze)
+    clyde.update_position(pacman['grid_pos'], grid, Maze)
+    
+    # print(f"Pacman Pos: {pacman['grid_pos']}")
     
     # draw
     pr.begin_drawing()
@@ -56,7 +64,11 @@ while not pr.window_should_close():
 
     Maze.draw_grid(grid)
     Pacman.draw_pacman(pacman, texture_atlas)
+    
     blinky.draw_ghost(texture_atlas)
+    pinky.draw_ghost(texture_atlas)
+    inky.draw_ghost(texture_atlas)
+    clyde.draw_ghost(texture_atlas)
 
     pr.end_drawing()
 

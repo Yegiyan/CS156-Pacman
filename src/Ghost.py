@@ -23,7 +23,7 @@ class Ghost:
         self.mode = 'scatter'
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
-        self.scatter_index = 0  # Initialize scatter index
+        self.scatter_index = 0
         self.scatter_corners = {
             "Blinky": [(1, 26), (5, 23), (3, 21)],  # top-right
             "Pinky": [(1, 1), (3, 6), (5, 2)],      # top-left
@@ -33,18 +33,18 @@ class Ghost:
 
     def update_position(self, pacman_pos, grid, maze_module):
         current_time = time.time()
-    
+
         if self.mode == 'frightened':
             if not self.path:
                 self.frightened(grid, maze_module)
         elif self.mode == 'scatter':
-            if not self.path:
+            if not self.path or len(self.path) == 1:  # check if it's time to update path early
                 self.scatter(grid, maze_module)
         elif self.mode == 'chase':
             if not self.path or (current_time - self.last_update_time > self.update_interval):
                 self.chase(pacman_pos, grid, maze_module)
                 self.last_update_time = current_time
-    
+
         if self.path:
             next_step = self.path[0]  # peek next step
             if self.grid_pos == pacman_pos:
@@ -95,19 +95,20 @@ class Ghost:
     def scatter(self, grid, maze_module):
         corners = self.scatter_corners[self.name]
         target_corner = corners[self.scatter_index]
-        
+    
         start = grid[self.grid_pos[0]][self.grid_pos[1]]
         target = grid[target_corner[0]][target_corner[1]]
         maze_module.clear_path(grid)
         maze_module.dijkstra(grid, start, target)
         path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+    
         if path and path[0] == self.grid_pos:
             path.pop(0)
         self.path = path
 
-        # Increment the scatter index to rotate to the next corner
+        # increment scatter index to rotate to next corner
         self.scatter_index = (self.scatter_index + 1) % len(corners)
-        
+
     def frightened(self, grid, maze_module):
         non_wall_cells = [cell for row in grid for cell in row if not cell.is_wall]
         destination = random.choice(non_wall_cells)
@@ -160,13 +161,13 @@ class Ghost:
             self.animation_timer = 0  # reset animation timer
 
 def create_blinky():
-    return Ghost("Blinky", (14, 13), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Blinky", (14, 12), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
 
 def create_pinky():
-    return Ghost("Pinky", (14, 13), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Pinky", (14, 11), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
 
 def create_inky():
-    return Ghost("Inky", (14, 13), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Inky", (14, 14), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
 
 def create_clyde():
-    return Ghost("Clyde", (14, 13), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Clyde", (14, 15), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
