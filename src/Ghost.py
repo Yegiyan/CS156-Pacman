@@ -20,9 +20,16 @@ class Ghost:
         self.animation_speed = 20
         self.direction = 'UP'
         self.just_changed_path = False
-        self.mode = 'chase'
+        self.mode = 'scatter'
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
+        self.scatter_index = 0  # Initialize scatter index
+        self.scatter_corners = {
+            "Blinky": [(1, 26), (5, 23), (3, 21)],  # top-right
+            "Pinky": [(1, 1), (3, 6), (5, 2)],      # top-left
+            "Inky": [(29, 26), (26, 15), (26, 21)], # bottom-right
+            "Clyde": [(29, 1), (23, 9), (29, 12)]   # bottom-left
+        }
 
     def update_position(self, pacman_pos, grid, maze_module):
         current_time = time.time()
@@ -86,21 +93,20 @@ class Ghost:
             pass
         
     def scatter(self, grid, maze_module):
-        if self.name == "Blinky":
-            # specific blinky scatter pathing here
-            pass
-            
-        if self.name == "Pinky":
-            # specific pinky scatter pathing here
-            pass
-            
-        if self.name == "Inky":
-            # specific inky scatter pathing here
-            pass
-            
-        if self.name == "Clyde":
-            # specific clyde scatter pathing here
-            pass
+        corners = self.scatter_corners[self.name]
+        target_corner = corners[self.scatter_index]
+        
+        start = grid[self.grid_pos[0]][self.grid_pos[1]]
+        target = grid[target_corner[0]][target_corner[1]]
+        maze_module.clear_path(grid)
+        maze_module.dijkstra(grid, start, target)
+        path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+        if path and path[0] == self.grid_pos:
+            path.pop(0)
+        self.path = path
+
+        # Increment the scatter index to rotate to the next corner
+        self.scatter_index = (self.scatter_index + 1) % len(corners)
         
     def frightened(self, grid, maze_module):
         non_wall_cells = [cell for row in grid for cell in row if not cell.is_wall]

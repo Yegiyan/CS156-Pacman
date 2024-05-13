@@ -44,7 +44,7 @@ while not pr.window_should_close():
         pacman['queued_direction'] = 'RIGHT'
 
     Pacman.move_pacman(pacman, Maze)
-    
+    print(f"Pacman at position: {pacman['grid_pos']}")
     blinky.update_position(pacman['grid_pos'], grid, Maze)
     
     # draw
