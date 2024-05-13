@@ -20,7 +20,7 @@ class Ghost:
         self.animation_speed = 20
         self.direction = 'UP'
         self.just_changed_path = False
-        self.mode = 'scatter'
+        self.mode = 'frightened'
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
         self.scatter_index = 0
@@ -34,30 +34,29 @@ class Ghost:
     def update_position(self, pacman_pos, grid, maze_module):
         current_time = time.time()
 
-        if self.mode == 'frightened':
-            if not self.path:
-                self.frightened(grid, maze_module)
-        elif self.mode == 'scatter':
-            if not self.path or len(self.path) == 1:  # check if it's time to update path early
-                self.scatter(grid, maze_module)
-        elif self.mode == 'chase':
-            if not self.path or (current_time - self.last_update_time > self.update_interval):
-                self.chase(pacman_pos, grid, maze_module)
+        if self.mode in ['frightened', 'scatter', 'chase']:
+            if not self.path or (len(self.path) == 1 and self.move_timer >= 1):
+                if self.mode == 'frightened':
+                    self.path = self.frightened(grid, maze_module)
+                elif self.mode == 'scatter':
+                    self.scatter(grid, maze_module)
+                elif self.mode == 'chase':
+                    self.chase(pacman_pos, grid, maze_module)
                 self.last_update_time = current_time
 
         if self.path:
-            next_step = self.path[0]  # peek next step
+            next_step = self.path[0]
             if self.grid_pos == pacman_pos:
-                self.path = []  # clear path if reached target
-            elif self.move_timer >= 1:
-                self.grid_pos = self.path.pop(0)  # move to next step
+                self.path = []
+            if self.move_timer >= 1:
+                if self.grid_pos != next_step:  # ensure it moves to the next grid cell
+                    self.update_direction(next_step)  # update direction before changing position
+                    self.grid_pos = self.path.pop(0)
                 if self.path:
                     self.target_pos = self.path[0]
-                self.move_timer = 0  # reset move timer
+                self.move_timer = 0  # reset move timer after aligning with grid
 
-            self.update_direction(next_step)
-
-        self.move_timer += self.speed  # increment move timer by speed
+        self.move_timer += self.speed
 
     def update_direction(self, next_step):
         if next_step[0] < self.grid_pos[0]:
@@ -115,7 +114,10 @@ class Ghost:
         start = grid[self.grid_pos[0]][self.grid_pos[1]]
         maze_module.clear_path(grid)
         maze_module.dijkstra(grid, start, destination)
-        self.path = [(step.row, step.col) for step in maze_module.reconstruct_path(destination)]
+        path = [(step.row, step.col) for step in maze_module.reconstruct_path(destination)]
+        if path and path[0] == self.grid_pos:
+            path.pop(0)
+        return path
         
     def get_center_position(self, vertical_offset):
         # interpolate positions between current and target based on move_timer

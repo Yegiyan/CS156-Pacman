@@ -41,23 +41,6 @@
   - The ghosts move slower than usual, and their direction is chosen randomly at each intersection
   - Pac-Man can eat the ghosts for extra points during this mode. After being eaten, a ghost's eyes return to the ghost pen (the starting area), where it regenerates and resumes its normal behavior
 
-## GHOST PROGRESSION
-
-### Level Progression
-- As levels progress, the duration of Frightened mode decreases, and the ghosts generally move faster (except when Frightened)
-
-### Ghost Behavior and Timing
-- Ghosts have specific timing patterns for switching between Scatter and Chase modes, and these become shorter as the game progresses
-
-### Tunnels
-- The side tunnels (or "warp tunnels") that connect the left and right sides of the screen cause Pac-Man and the ghosts slow down while passing through these tunnels
-
-### Cornering
-- When maneuvering around corners, Pac-Man can "cut corners" by turning just before he actually reaches the turn
-
-### Ghost Release from the Pen
-- Ghosts are initially confined in the central pen and begin to leave one by one
-
 ## SCORING LOGIC
 
 ### Pellets
