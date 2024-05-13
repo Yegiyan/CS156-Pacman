@@ -73,18 +73,12 @@ class Ghost:
         self.path = [(step.row, step.col) for step in maze_module.reconstruct_path(destination)]
 
     def chase(self, pacman_pos, grid, maze_module):
-        print(f"Chasing Pacman at position: {pacman_pos}")
-
         start = grid[self.grid_pos[0]][self.grid_pos[1]]
         target = grid[pacman_pos[1]][pacman_pos[0]]
-    
-        print(f"Start Cell: {start}")  # Debugging start cell
-        print(f"Target Cell: {target}")  # Debugging target cell
 
         maze_module.clear_path(grid)
         maze_module.dijkstra(grid, start, target)
         self.path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
-
         
     def scatter(self, grid, maze_module):
         # define scatter behavior, where ghosts move towards fixed corners
