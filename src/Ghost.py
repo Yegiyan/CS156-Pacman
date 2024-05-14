@@ -33,7 +33,7 @@ class Ghost:
             "Clyde": [(29, 1), (23, 9), (29, 12)]   # bottom-left
         }
 
-    def update_position(self, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
+    def update_position(self, pacman, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
         current_time = time.time()
         
         if self.mode == 'frightened':
@@ -41,6 +41,15 @@ class Ghost:
             if self.grid_pos[1] == pacman_pos[0] and self.grid_pos[0] == pacman_pos[1]:
                 self.mode = 'eaten'
                 self.path = self.return_to_spawn(grid, maze_module)  # generate path to spawn point
+                pacman['ghosts_eaten'] += 1
+                if pacman['ghosts_eaten'] == 1:
+                    pacman['score'] += 200
+                elif pacman['ghosts_eaten'] == 2:
+                    pacman['score'] += 400
+                elif pacman['ghosts_eaten'] == 3:
+                    pacman['score'] += 800
+                elif pacman['ghosts_eaten'] == 4:
+                    pacman['score'] += 1600
                 return
             
         if self.mode == 'eaten':

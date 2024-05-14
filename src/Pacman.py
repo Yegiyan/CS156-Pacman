@@ -17,6 +17,7 @@ def create_pacman(grid_x, grid_y, cell_size=24, scale=2.85, vertical_offset=87, 
         'current_frame': 0,
         'frame_offset': 0,
         'score': 0,
+        'ghosts_eaten': 0,
         'sprite_regions': [
             pr.Rectangle(0, 0, 13, 13), pr.Rectangle(20, 0, 13, 13), pr.Rectangle(40, 0, 13, 13),
             pr.Rectangle(0, 20, 13, 13), pr.Rectangle(20, 20, 13, 13), pr.Rectangle(40, 20, 13, 13)
@@ -72,6 +73,7 @@ def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offse
             current_cell.cell_type = 2
             pacman['score'] += 50
 
+            pacman['ghosts_eaten'] = 0
             for ghost in ghosts:
                 ghost.mode = 'frightened'
                 ghost.frightened_start_time = time.time()
@@ -79,7 +81,6 @@ def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offse
         # update actual position for rendering
         pacman['x'] = horizontal_offset + grid_x * 24 + (24 - pacman['size']) / 2
         pacman['y'] = vertical_offset + grid_y * 24 + (24 - pacman['size']) / 2
-
     
 def draw_pacman(pacman, pacman_texture):
     current_time = pr.get_time()

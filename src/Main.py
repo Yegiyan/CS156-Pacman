@@ -54,10 +54,11 @@ while not pr.window_should_close():
     Pacman.move_pacman(pacman, ghosts, grid, Maze)
     
     # update ghosts
-    #for i, ghost in enumerate(ghosts):
-    #    if current_time >= spawn_times[i]:
-    #        ghost.update_position(pacman['grid_pos'], pacman['current_direction'], ghost.grid_pos, grid, Maze)
-    blinky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+    for i, ghost in enumerate(ghosts):
+        if current_time >= spawn_times[i]:
+            ghost.update_position(pacman, pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+    
+    # blinky.update_position(pacman, pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
     # print(f"Pacman Pos: {pacman['grid_pos']}")
     
     # draw
