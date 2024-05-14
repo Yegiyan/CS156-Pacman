@@ -20,7 +20,7 @@ class Ghost:
         self.animation_speed = 20
         self.direction = 'UP'
         self.just_changed_path = False
-        self.mode = 'frightened'
+        self.mode = 'chase'
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
         self.scatter_index = 0
@@ -31,10 +31,9 @@ class Ghost:
             "Clyde": [(29, 1), (23, 9), (29, 12)]   # bottom-left
         }
 
-    def update_position(self, pacman_pos, grid, maze_module):
+    def update_position(self, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
         current_time = time.time()
 
-        # check and update the path if needed
         if self.mode in ['frightened', 'scatter', 'chase']:
             if not self.path or (len(self.path) == 1 and self.move_timer >= 1):
                 if self.mode == 'frightened':
@@ -42,7 +41,7 @@ class Ghost:
                 elif self.mode == 'scatter':
                     self.scatter(grid, maze_module)
                 elif self.mode == 'chase':
-                    self.chase(pacman_pos, grid, maze_module)
+                    self.chase(pacman_pos, pacman_direction, blinky_pos, grid, maze_module)
                 self.last_update_time = current_time
 
         if self.path:
@@ -51,13 +50,15 @@ class Ghost:
                 self.path = []
             if self.move_timer >= 1:
                 if self.grid_pos != next_step:  # ensure it moves to the next grid cell
-                    self.update_direction(next_step)  # update direction before changing position
-                    if self.path:
-                        self.grid_pos = self.path.pop(0)
+                    self.grid_pos = next_step
+                    self.move_timer = 0  # reset move timer after aligning with grid
+                    if len(self.path) > 1:
+                        self.update_direction(self.path[1])  # update direction to next after current
+                    else:
+                        self.update_direction(next_step)
                 if self.path:
-                    self.target_pos = self.path[0]
-                    
-                self.move_timer = 0  # reset move timer after aligning with grid
+                    self.target_pos = next_step
+                    self.path.pop(0)
 
         self.move_timer += self.speed
 
@@ -72,8 +73,9 @@ class Ghost:
         elif next_step[1] > self.grid_pos[1]:
             self.direction = 'RIGHT'
 
-    def chase(self, pacman_pos, grid, maze_module):
+    def chase(self, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
         if self.name == "Blinky":
+            # pathfind from blinky's current position to target
             start = grid[self.grid_pos[0]][self.grid_pos[1]]
             target = grid[pacman_pos[1]][pacman_pos[0]]
             maze_module.clear_path(grid)
@@ -83,17 +85,102 @@ class Ghost:
                 path.pop(0)
             self.path = path
             
-        if self.name == "Pinky":
-            # specific pinky chase pathing here
-            pass
+        elif self.name == "Pinky":
+            target_y, target_x = pacman_pos
+
+            # adjust target based on Pacman's direction
+            if pacman_direction == 'UP':
+                target_x -= 4
+            elif pacman_direction == 'DOWN':
+                target_x += 4
+            elif pacman_direction == 'LEFT':
+                target_y -= 4
+            elif pacman_direction == 'RIGHT':
+                target_y += 4
+
+            # check if target is within the grid boundaries
+            if 0 <= target_x < len(grid) and 0 <= target_y < len(grid[0]):
+                if not grid[target_x][target_y].is_wall:
+                    valid_target = True
+                else:
+                    valid_target = False
+            else:
+                valid_target = False
+
+            # fallback to blinky's chase behavior if target is not valid
+            if not valid_target:
+                target_y, target_x = pacman_pos
+
+            # pathfind from pinky's current position to target
+            start = grid[self.grid_pos[0]][self.grid_pos[1]]
+            target = grid[target_x][target_y]
+            maze_module.clear_path(grid)
+            maze_module.dijkstra(grid, start, target)
+            path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+            if path and path[0] == self.grid_pos:
+                path.pop(0)
+            self.path = path
             
         if self.name == "Inky":
-            # specific inky chase pathing here
-            pass
+            # calculate intermediate target two cells in front of pacman
+            inter_target_y, inter_target_x = pacman_pos
+            if pacman_direction == 'UP':
+                inter_target_x -= 2
+            elif pacman_direction == 'DOWN':
+                inter_target_x += 2
+            elif pacman_direction == 'LEFT':
+                inter_target_y -= 2
+            elif pacman_direction == 'RIGHT':
+                inter_target_y += 2
+            
+            # ensure intermediate target is within grid boundaries
+            inter_target_x = max(0, min(inter_target_x, len(grid) - 1))
+            inter_target_y = max(0, min(inter_target_y, len(grid[0]) - 1))
+
+            # Calculate the vector from Blinky to this intermediate target
+            vector_x = inter_target_x - blinky_pos[0]
+            vector_y = inter_target_y - blinky_pos[1]
+
+            # extend vector by its own length from intermediate target
+            final_target_x = inter_target_x + vector_x
+            final_target_y = inter_target_y + vector_y
+            
+            # check if final target is within grid
+            final_target_x = max(0, min(final_target_x, len(grid) - 1))
+            final_target_y = max(0, min(final_target_y, len(grid[0]) - 1))
+
+            # check if final target is not wall else  fall back to blinky's behavior
+            if grid[final_target_x][final_target_y].is_wall:
+                final_target_y, final_target_x = pacman_pos
+
+            # pathfind from inky's current position to final target
+            start = grid[self.grid_pos[0]][self.grid_pos[1]]
+            target = grid[final_target_x][final_target_y]
+            maze_module.clear_path(grid)
+            maze_module.dijkstra(grid, start, target)
+            path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+            if path and path[0] == self.grid_pos:
+                path.pop(0)
+            self.path = path
             
         if self.name == "Clyde":
-            # specific clyde chase pathing here
-            pass
+            # calculate distance between clyde and pacman, with a threshold of 8 cells
+            distance = ((self.grid_pos[0] - pacman_pos[0]) ** 2 + (self.grid_pos[1] - pacman_pos[1]) ** 2) ** 0.5
+            threshold = 8
+            
+            if distance < threshold:
+                # use blinky's chase behaviour
+                start = grid[self.grid_pos[0]][self.grid_pos[1]]
+                target = grid[pacman_pos[1]][pacman_pos[0]]
+                maze_module.clear_path(grid)
+                maze_module.dijkstra(grid, start, target)
+                path = [(step.row, step.col) for step in maze_module.reconstruct_path(target)]
+                if path and path[0] == self.grid_pos:
+                    path.pop(0)
+                self.path = path
+            else:
+                # revert to scatter mode
+                self.scatter(grid, maze_module)
         
     def scatter(self, grid, maze_module):
         corners = self.scatter_corners[self.name]

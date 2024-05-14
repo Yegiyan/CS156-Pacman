@@ -48,12 +48,12 @@ while not pr.window_should_close():
 
     Pacman.move_pacman(pacman, grid, Maze)
     
-    blinky.update_position(pacman['grid_pos'], grid, Maze)
-    pinky.update_position(pacman['grid_pos'], grid, Maze)
-    inky.update_position(pacman['grid_pos'], grid, Maze)
-    clyde.update_position(pacman['grid_pos'], grid, Maze)
+    blinky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+    pinky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+    inky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+    clyde.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
     
-    # print(f"Pacman Pos: {pacman['grid_pos']}")
+    #print(f"Pacman Pos: {pacman['grid_pos']}")
     
     # draw
     pr.begin_drawing()
