@@ -33,4 +33,4 @@ This is a project for the CS-156 course, where we're creating a Pacman applicati
 - Nirupama Tippabhatla
 - Rohan Mehta
 
-![image](https://i.imgur.com/AzHE0X7)
+![Image](https://i.imgur.com/AzHE0X7_d.webp?maxwidth=760&fidelity=grand)
