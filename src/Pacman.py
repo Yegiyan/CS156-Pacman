@@ -72,11 +72,14 @@ def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offse
         elif current_cell.cell_type == 3:
             current_cell.cell_type = 2
             pacman['score'] += 50
-
             pacman['ghosts_eaten'] = 0
             for ghost in ghosts:
                 ghost.mode = 'frightened'
                 ghost.frightened_start_time = time.time()
+        elif current_cell.cell_type == 4:
+            if current_cell.fruit_type:
+                pacman['score'] += current_cell.fruit_type['score']
+            current_cell.cell_type = 2
 
         # update actual position for rendering
         pacman['x'] = horizontal_offset + grid_x * 24 + (24 - pacman['size']) / 2

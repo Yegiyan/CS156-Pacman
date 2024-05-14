@@ -22,6 +22,8 @@ class Ghost:
         self.direction = 'UP'
         self.frightened_start_time = None
         self.mode = 'scatter'
+        self.mode_timer = 0 # timer for mode duration
+        self.mode_duration = self.random_mode_duration() # initial mode duration between 7 and 14 seconds
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
         self.eaten_coords = (0, 200)
@@ -32,9 +34,20 @@ class Ghost:
             "Inky": [(29, 26), (26, 15), (26, 21)], # bottom-right
             "Clyde": [(29, 1), (23, 9), (29, 12)]   # bottom-left
         }
+        
+    def random_mode_duration(self):
+        return random.uniform(7, 14)
 
     def update_position(self, pacman, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
         current_time = time.time()
+        
+        if self.mode == 'scatter' or self.mode == 'chase':
+            self.mode_timer += current_time - self.last_update_time
+            if self.mode_timer >= self.mode_duration:
+                self.mode = 'chase' if self.mode == 'scatter' else 'scatter'
+                self.mode_timer = 0 # reset mode timer
+                self.mode_duration = self.random_mode_duration() # set new random duration for the next mode
+                self.last_update_time = current_time # reset the last update time
         
         if self.mode == 'frightened':
             self.speed = 0.08
@@ -89,16 +102,6 @@ class Ghost:
                     self.path.pop(0)
 
         self.move_timer += self.speed
-
-    def return_to_spawn(self, grid, maze_module):
-        start = grid[self.grid_pos[0]][self.grid_pos[1]]
-        spawn = grid[self.spawn_pos[0]][self.spawn_pos[1]]
-        maze_module.clear_path(grid)
-        maze_module.dijkstra(grid, start, spawn)
-        path = [(step.row, step.col) for step in maze_module.reconstruct_path(spawn)]
-        if path and path[0] == self.grid_pos:
-            path.pop(0)
-        return path
 
     def update_direction(self, next_step):
         if next_step[0] < self.grid_pos[0]:
@@ -247,6 +250,16 @@ class Ghost:
             path.pop(0)
         return path
         
+    def return_to_spawn(self, grid, maze_module):
+        start = grid[self.grid_pos[0]][self.grid_pos[1]]
+        spawn = grid[self.spawn_pos[0]][self.spawn_pos[1]]
+        maze_module.clear_path(grid)
+        maze_module.dijkstra(grid, start, spawn)
+        path = [(step.row, step.col) for step in maze_module.reconstruct_path(spawn)]
+        if path and path[0] == self.grid_pos:
+            path.pop(0)
+        return path
+    
     def get_center_position(self, vertical_offset):
         # interpolate positions between current and target based on move_timer
         pixel_x = (self.grid_pos[1] * (1 - self.move_timer) + self.target_pos[1] * self.move_timer) * self.grid_cell_size

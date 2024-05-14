@@ -1,5 +1,5 @@
 import pyray as pr
-import heapq
+import heapq, random
 
 # 0 = pellet
 # 1 = wall
@@ -39,7 +39,7 @@ maze_layout = [
     [2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 2, 2, 2, 4, 4, 2, 2, 2, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -63,6 +63,7 @@ class Cell:
         self.size = size
         self.is_wall = cell_type == 1
         self.cell_type = cell_type # indicate if cell is part of the path
+        self.fruit_type = None if cell_type != 4 else get_fruit_texture()
 
     def __lt__(self, other):
         return self.cost < other.cost
@@ -162,7 +163,22 @@ def is_direction_blocked(x, y, direction):
         return maze_layout[y][x+1] == 1 or maze_layout[y][x+1] == 5
     return False
 
-def draw_grid(grid, vertical_offset=87):
+def get_fruit_texture():
+    # fruit textures in atlas
+    fruits = {
+        "cherry": {"x": 169, "y": 161, "width": 12, "height": 12, "score": 100},
+        "strawberry": {"x": 170, "y": 181, "width": 11, "height": 13, "score": 300},
+        "orange": {"x": 170, "y": 201, "width": 11, "height": 12, "score": 500},
+        "apple": {"x": 169, "y": 221, "width": 12, "height": 12, "score": 700}
+    }
+    
+    # randomly select a fruit
+    fruit_name = random.choice(list(fruits.keys()))
+    fruit_data = fruits[fruit_name]
+
+    return fruit_data 
+
+def draw_grid(grid, texture_atlas, vertical_offset=87):
     for row in grid:
         for cell in row:
             if cell.is_wall:
@@ -171,7 +187,11 @@ def draw_grid(grid, vertical_offset=87):
                 pr.draw_circle(cell.x + cell.size // 2, cell.y + cell.size // 2 + vertical_offset, 3, pr.YELLOW)
             elif cell.cell_type == 3:  # large pellet
                 pr.draw_circle(cell.x + cell.size // 2, cell.y + cell.size // 2 + vertical_offset, 6, pr.YELLOW)
-            elif cell.cell_type == 2 or cell.cell_type == 4 or cell.cell_type == 5:  # empty space, fruit, or ghost wall
-                continue  # No drawing needed for empty space or special handling for others
+            elif cell.cell_type == 4: # fruit
+                source_rect = pr.Rectangle(cell.fruit_type['x'], cell.fruit_type['y'], cell.fruit_type['width'], cell.fruit_type['height'])
+                dest_rect = pr.Rectangle(cell.x, cell.y + vertical_offset, cell.size, cell.size)
+                pr.draw_texture_pro(texture_atlas, source_rect, dest_rect, pr.Vector2(0, 0), 0, pr.WHITE)
+            elif cell.cell_type == 2 or cell.cell_type == 5:  # empty space or ghost wall
+                continue
             else:
                 pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, pr.GRAY)  # non-path color

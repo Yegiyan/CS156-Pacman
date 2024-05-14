@@ -10,6 +10,7 @@ SCREEN_HEIGHT = 885
 pr.init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "CS156 - Pacman Project")
 icon = pr.load_image("../assets/images/icon.png")
 pr.set_window_icon(icon)
+pr.init_audio_device()
 pr.set_target_fps(60)
 
 # load maze and font resources
@@ -20,6 +21,13 @@ font = pr.load_font("../assets/font/PressStart2P.ttf")
 # set up drawing rectangles
 maze_src_rect = pr.Rectangle(0, 0, maze_img.width, maze_img.height)
 maze_dest_rect = pr.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+# load audio
+beginning_sound = pr.load_sound("../assets/audio/beginning.wav")
+hasPlayedIntro = False
+
+menu_options = ["Play", "Exit"]
+current_option = 0  # start with 'Play' selected
 
 texture_image = pr.load_image("../assets/images/sprites.png")
 texture_atlas = pr.load_texture_from_image(texture_image)
@@ -33,7 +41,58 @@ inky = Ghost.create_inky()
 clyde = Ghost.create_clyde()
 
 ghosts = [blinky, pinky, inky, clyde]
-spawn_times = [time.time() + 1*i for i in range(len(ghosts))] # exit spawn pen every 1 second
+spawn_times = [time.time() + 5*i for i in range(len(ghosts))] # exit spawn pen every 1 second
+
+# extra functions
+def draw_menu():
+    pr.begin_drawing()
+    pr.clear_background(pr.BLACK)
+    title_text = "PACMAN"
+    pr.draw_text_ex(font, title_text, pr.Vector2(220, 150), 40, 2, pr.YELLOW)
+    for i, option in enumerate(menu_options):
+        color = pr.RED if i == current_option else pr.WHITE
+        x = 275
+        y = 300 + 50 * i
+        pr.draw_text_ex(font, option, pr.Vector2(x, y), 30, 2, color)
+    pr.end_drawing()
+
+def draw_victory_screen():
+    pr.begin_drawing()
+    pr.clear_background(pr.BLACK)
+    victory_text = "VICTORY! YOU WON!"
+    pr.draw_text_ex(font, victory_text, pr.Vector2(70, 300), 30, 2, pr.YELLOW)
+
+    exit_button_text = "EXIT GAME"
+    exit_button_x = 210
+    exit_button_y = 400
+    pr.draw_text_ex(font, exit_button_text, pr.Vector2(exit_button_x, exit_button_y), 24, 2, pr.RED)
+    pr.end_drawing()
+
+    # check if the exit button is pressed
+    if pr.is_key_pressed(pr.KEY_ENTER) or pr.is_key_pressed(pr.KEY_SPACE):
+        pr.close_window()
+            
+def check_all_pellets_eaten(grid):
+    for row in grid:
+        for cell in row:
+            if cell.cell_type == 0 or cell.cell_type == 3:
+                return False
+    return True
+
+# main menu loop
+while not pr.window_should_close():
+    if pr.is_key_pressed(pr.KEY_DOWN) or pr.is_key_pressed(pr.KEY_S):
+        current_option = (current_option + 1) % len(menu_options)
+    elif pr.is_key_pressed(pr.KEY_UP) or pr.is_key_pressed(pr.KEY_W):
+        current_option = (current_option - 1) % len(menu_options)
+    elif pr.is_key_pressed(pr.KEY_ENTER) or pr.is_key_pressed(pr.KEY_SPACE):
+        if current_option == 0: # play selected
+            pr.play_sound(beginning_sound)
+            break
+        elif current_option == 1: # exit selected
+            pr.close_window()
+            exit()
+    draw_menu()
 
 # main game loop
 while not pr.window_should_close():
@@ -41,6 +100,10 @@ while not pr.window_should_close():
     # update
     current_time = time.time()
     delta_time = pr.get_frame_time()
+    
+    if check_all_pellets_eaten(grid):
+        draw_victory_screen()
+        continue
     
     if pr.is_key_pressed(pr.KEY_UP) or pr.is_key_pressed(pr.KEY_W):
         pacman['queued_direction'] = 'UP'
@@ -71,7 +134,7 @@ while not pr.window_should_close():
     score_text = f"{pacman['score']}"
     pr.draw_text_ex(font, score_text, pr.Vector2(300, 50), 24, 2, pr.WHITE)
 
-    Maze.draw_grid(grid)
+    Maze.draw_grid(grid, texture_atlas)
     Pacman.draw_pacman(pacman, texture_atlas)
     
     blinky.draw_ghost(texture_atlas)
@@ -80,6 +143,10 @@ while not pr.window_should_close():
     clyde.draw_ghost(texture_atlas)
 
     pr.end_drawing()
+    
+    if hasPlayedIntro == False:
+        time.sleep(4)
+        hasPlayedIntro = True
 
 # unload resources and close window
 pr.unload_image(icon)
