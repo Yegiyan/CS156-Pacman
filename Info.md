@@ -72,13 +72,6 @@ Fruits appear near the center of the maze and provide additional points when eat
 - **Strawberry**: 300 points (2nd level)
 - **Orange**: 500 points (3rd and 4th levels)
 - **Apple**: 700 points (5th and 6th levels)
-- **Melon**: 1000 points (7th and 8th levels)
-- **Galaxian Boss**: 2000 points (9th and 10th levels)
-- **Bell**: 3000 points (11th and 12th levels)
-- **Key**: 5000 points (13th level onwards)
-
-### Additional Points
-- Completing a level by eating all pellets does not directly score extra points but allows progression to the next level where more points can be earned
 
 ## PROJECT INFO
 
