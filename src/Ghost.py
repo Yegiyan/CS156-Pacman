@@ -19,8 +19,8 @@ class Ghost:
         self.animation_timer = 0
         self.animation_speed = 20
         self.direction = 'UP'
-        self.just_changed_path = False
-        self.mode = 'chase'
+        self.frightened_start_time = None
+        self.mode = 'scatter'
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
         self.scatter_index = 0
@@ -33,6 +33,12 @@ class Ghost:
 
     def update_position(self, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
         current_time = time.time()
+        
+        if self.mode == 'frightened':
+            self.speed = 0.08
+            
+        if self.mode == 'frightened' and (current_time - self.frightened_start_time) >= 8:
+                    self.mode = 'scatter'
 
         if self.mode in ['frightened', 'scatter', 'chase']:
             if not self.path or (len(self.path) == 1 and self.move_timer >= 1):
@@ -49,11 +55,11 @@ class Ghost:
             if self.grid_pos == pacman_pos:
                 self.path = []
             if self.move_timer >= 1:
-                if self.grid_pos != next_step:  # ensure it moves to the next grid cell
+                if self.grid_pos != next_step: # ensure it moves to the next grid cell
                     self.grid_pos = next_step
-                    self.move_timer = 0  # reset move timer after aligning with grid
+                    self.move_timer = 0 # reset move timer after aligning with grid
                     if len(self.path) > 1:
-                        self.update_direction(self.path[1])  # update direction to next after current
+                        self.update_direction(self.path[1]) # update direction to next after current
                     else:
                         self.update_direction(next_step)
                 if self.path:
@@ -137,7 +143,7 @@ class Ghost:
             inter_target_x = max(0, min(inter_target_x, len(grid) - 1))
             inter_target_y = max(0, min(inter_target_y, len(grid[0]) - 1))
 
-            # Calculate the vector from Blinky to this intermediate target
+            # calculate vector from blinky to intermediate target
             vector_x = inter_target_x - blinky_pos[0]
             vector_y = inter_target_y - blinky_pos[1]
 
@@ -228,30 +234,46 @@ class Ghost:
     def draw_ghost(self, texture, vertical_offset=87, max_cols=28):
         frame_offset = {'UP': 0, 'DOWN': 2, 'LEFT': 4, 'RIGHT': 6}
         frame_num = frame_offset[self.direction] + self.current_frame
-        sprite_x = self.base_sprite_coords[0] + frame_num * 20  # calculate x position of the frame
+
+        # set texture coordinates for frightened mode
+        if self.mode == 'frightened':
+            current_time = time.time()
+            time_left = self.frightened_start_time + 8 - current_time  # Calculate remaining time in frightened mode
+            
+            if time_left <= 3:
+                # alternate between textures every 0.10 seconds for visual cue
+                index = int((current_time % 1) // 0.10) % 4
+                sprite_x = 20 * index  # coordinates 0, 20, 40, 60 based on time fraction
+                sprite_y = 160
+            else:
+                sprite_x = 20 * self.current_frame  # alternates between x-coord 0 and 20 normally
+                sprite_y = 160
+        else:
+            sprite_x = self.base_sprite_coords[0] + frame_num * 20  # normal mode coordinates
+            sprite_y = self.base_sprite_coords[1]
 
         center_x, center_y = self.get_center_position(vertical_offset)
-        sprite_rect = pr.Rectangle(sprite_x, self.base_sprite_coords[1], self.sprite_size[0], self.sprite_size[1])
-        dest_rect = pr.Rectangle(center_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
+        sprite_rect = pr.Rectangle(sprite_x, sprite_y, self.sprite_size[0], self.sprite_size[1])
+        dest_rect = pr.Rectangle(center_x, center_y, self.sprite_size[0] * self.scale, self.sprite_size[1] * self.scale)
 
-        # check if the ghost should wrap around the screen
+        # ghost wrap-around logic for moving through tunnels
         if self.should_wrap(self.grid_pos, self.target_pos, max_cols):
-            if self.direction == 'LEFT': # if moving left through the tunnel, draw on the right side
+            if self.direction == 'LEFT':
                 wrap_x = (max_cols * self.grid_cell_size) + center_x
-                wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
+                wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0] * self.scale, self.sprite_size[1] * self.scale)
                 pr.draw_texture_pro(texture, sprite_rect, wrap_rect, pr.Vector2(0, 0), 0, self.color)
-            elif self.direction == 'RIGHT': # if moving right through the tunnel, draw on the left side
+            elif self.direction == 'RIGHT':
                 wrap_x = center_x - (max_cols * self.grid_cell_size)
-                wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0]*self.scale, self.sprite_size[1]*self.scale)
+                wrap_rect = pr.Rectangle(wrap_x, center_y, self.sprite_size[0] * self.scale, self.sprite_size[1] * self.scale)
                 pr.draw_texture_pro(texture, sprite_rect, wrap_rect, pr.Vector2(0, 0), 0, self.color)
         else:
             pr.draw_texture_pro(texture, sprite_rect, dest_rect, pr.Vector2(0, 0), 0, self.color)
 
-        # update animation based on animation speed timer
+        # animation update logic
         self.animation_timer += 1
         if self.animation_timer >= self.animation_speed:
-            self.current_frame = 1 - self.current_frame  # toggle between 0 and 1
-            self.animation_timer = 0  # reset animation timer
+            self.current_frame = 1 - self.current_frame  # toggle between frame 0 and 1
+            self.animation_timer = 0  # reset timer
 
 def create_blinky():
     return Ghost("Blinky", (14, 12), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
@@ -260,7 +282,7 @@ def create_pinky():
     return Ghost("Pinky", (14, 11), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
 
 def create_inky():
-    return Ghost("Inky", (14, 14), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Inky", (14, 15), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
 
 def create_clyde():
-    return Ghost("Clyde", (14, 15), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Clyde", (14, 16), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)

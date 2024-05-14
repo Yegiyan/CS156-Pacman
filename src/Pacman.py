@@ -1,4 +1,5 @@
 import pyray as pr
+import time
 
 def create_pacman(grid_x, grid_y, cell_size=24, scale=2.85, vertical_offset=87, horizontal_offset=0):
     scaled_size = 13 * scale
@@ -23,7 +24,7 @@ def create_pacman(grid_x, grid_y, cell_size=24, scale=2.85, vertical_offset=87, 
     }
     return pacman
 
-def move_pacman(pacman, grid, maze, vertical_offset=87, horizontal_offset=0):
+def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offset=0):
     current_time = pr.get_time()
     grid_x, grid_y = pacman['grid_pos']
     current_dir = pacman['current_direction']
@@ -70,10 +71,15 @@ def move_pacman(pacman, grid, maze, vertical_offset=87, horizontal_offset=0):
         elif current_cell.cell_type == 3:
             current_cell.cell_type = 2
             pacman['score'] += 50
+            # Change mode of all ghosts to 'frightened'
+            for ghost in ghosts:
+                ghost.mode = 'frightened'
+                ghost.frightened_start_time = time.time()
 
         # update actual position for rendering
         pacman['x'] = horizontal_offset + grid_x * 24 + (24 - pacman['size']) / 2
         pacman['y'] = vertical_offset + grid_y * 24 + (24 - pacman['size']) / 2
+
     
 def draw_pacman(pacman, pacman_texture):
     current_time = pr.get_time()

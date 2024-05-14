@@ -1,5 +1,6 @@
 import pyray as pr
 import Maze, Pacman, Ghost
+import time
 
 # window size
 SCREEN_WIDTH = 672
@@ -31,10 +32,14 @@ pinky = Ghost.create_pinky()
 inky = Ghost.create_inky()
 clyde = Ghost.create_clyde()
 
+ghosts = [blinky, pinky, inky, clyde]
+spawn_times = [time.time() + 1*i for i in range(len(ghosts))] # exit spawn pen every 1 second
+
 # main game loop
 while not pr.window_should_close():
       
     # update
+    current_time = time.time()
     delta_time = pr.get_frame_time()
     
     if pr.is_key_pressed(pr.KEY_UP) or pr.is_key_pressed(pr.KEY_W):
@@ -46,14 +51,14 @@ while not pr.window_should_close():
     elif pr.is_key_pressed(pr.KEY_RIGHT) or pr.is_key_pressed(pr.KEY_D):
         pacman['queued_direction'] = 'RIGHT'
 
-    Pacman.move_pacman(pacman, grid, Maze)
+    Pacman.move_pacman(pacman, ghosts, grid, Maze)
     
-    blinky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
-    pinky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
-    inky.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
-    clyde.update_position(pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+    # update ghosts
+    for i, ghost in enumerate(ghosts):
+        if current_time >= spawn_times[i]:
+            ghost.update_position(pacman['grid_pos'], pacman['current_direction'], ghost.grid_pos, grid, Maze)
     
-    #print(f"Pacman Pos: {pacman['grid_pos']}")
+    # print(f"Pacman Pos: {pacman['grid_pos']}")
     
     # draw
     pr.begin_drawing()
