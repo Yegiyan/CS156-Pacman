@@ -71,7 +71,7 @@ def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offse
         elif current_cell.cell_type == 3:
             current_cell.cell_type = 2
             pacman['score'] += 50
-            # Change mode of all ghosts to 'frightened'
+
             for ghost in ghosts:
                 ghost.mode = 'frightened'
                 ghost.frightened_start_time = time.time()

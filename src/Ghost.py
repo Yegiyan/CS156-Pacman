@@ -3,10 +3,11 @@ import random
 import time
 
 class Ghost:
-    def __init__(self, name, pos, grid_cell_size, color, base_sprite_coords, sprite_size, scale=1.0, speed=0.35):
+    def __init__(self, name, pos, spawn_pos, grid_cell_size, color, base_sprite_coords, sprite_size, scale=1.0, speed=0.35):
         self.name = name
         self.grid_pos = pos
         self.target_pos = pos
+        self.spawn_pos = spawn_pos
         self.grid_cell_size = grid_cell_size
         self.color = color
         self.base_sprite_coords = base_sprite_coords
@@ -23,6 +24,7 @@ class Ghost:
         self.mode = 'scatter'
         self.update_interval = 0.1 # interval in seconds for updating the path
         self.last_update_time = time.time()
+        self.eaten_coords = (0, 200)
         self.scatter_index = 0
         self.scatter_corners = {
             "Blinky": [(1, 26), (5, 23), (3, 21)],  # top-right
@@ -36,6 +38,17 @@ class Ghost:
         
         if self.mode == 'frightened':
             self.speed = 0.08
+            if self.grid_pos[1] == pacman_pos[0] and self.grid_pos[0] == pacman_pos[1]:
+                self.mode = 'eaten'
+                self.path = self.return_to_spawn(grid, maze_module)  # generate path to spawn point
+                return
+            
+        if self.mode == 'eaten':
+            self.speed = 0.1425
+            if self.grid_pos == self.spawn_pos:
+                self.mode = random.choice(['scatter', 'chase'])  # choose mode randomly
+            if not self.path:
+                self.path = self.return_to_spawn(grid, maze_module)
             
         if self.mode == 'frightened' and (current_time - self.frightened_start_time) >= 8:
                     self.mode = 'scatter'
@@ -68,6 +81,15 @@ class Ghost:
 
         self.move_timer += self.speed
 
+    def return_to_spawn(self, grid, maze_module):
+        start = grid[self.grid_pos[0]][self.grid_pos[1]]
+        spawn = grid[self.spawn_pos[0]][self.spawn_pos[1]]
+        maze_module.clear_path(grid)
+        maze_module.dijkstra(grid, start, spawn)
+        path = [(step.row, step.col) for step in maze_module.reconstruct_path(spawn)]
+        if path and path[0] == self.grid_pos:
+            path.pop(0)
+        return path
 
     def update_direction(self, next_step):
         if next_step[0] < self.grid_pos[0]:
@@ -235,10 +257,13 @@ class Ghost:
         frame_offset = {'UP': 0, 'DOWN': 2, 'LEFT': 4, 'RIGHT': 6}
         frame_num = frame_offset[self.direction] + self.current_frame
 
-        # set texture coordinates for frightened mode
+        # initial coordinates should default to normal mode coordinates
+        sprite_x = self.base_sprite_coords[0] + frame_num * 20
+        sprite_y = self.base_sprite_coords[1]
+
         if self.mode == 'frightened':
             current_time = time.time()
-            time_left = self.frightened_start_time + 8 - current_time  # Calculate remaining time in frightened mode
+            time_left = self.frightened_start_time + 8 - current_time  # calculate remaining time in frightened mode
             
             if time_left <= 3:
                 # alternate between textures every 0.10 seconds for visual cue
@@ -248,9 +273,11 @@ class Ghost:
             else:
                 sprite_x = 20 * self.current_frame  # alternates between x-coord 0 and 20 normally
                 sprite_y = 160
-        else:
-            sprite_x = self.base_sprite_coords[0] + frame_num * 20  # normal mode coordinates
-            sprite_y = self.base_sprite_coords[1]
+
+        elif self.mode == 'eaten':
+            # adjust texture coordinates specifically for 'eaten' mode
+            sprite_x, sprite_y = self.eaten_coords
+            sprite_x += {'UP': 0, 'DOWN': 20, 'LEFT': 40, 'RIGHT': 60}[self.direction]
 
         center_x, center_y = self.get_center_position(vertical_offset)
         sprite_rect = pr.Rectangle(sprite_x, sprite_y, self.sprite_size[0], self.sprite_size[1])
@@ -275,14 +302,15 @@ class Ghost:
             self.current_frame = 1 - self.current_frame  # toggle between frame 0 and 1
             self.animation_timer = 0  # reset timer
 
+
 def create_blinky():
-    return Ghost("Blinky", (14, 12), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Blinky", (14, 12), (14, 12), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
 
 def create_pinky():
-    return Ghost("Pinky", (14, 11), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Pinky", (14, 11), (14, 11), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
 
 def create_inky():
-    return Ghost("Inky", (14, 15), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Inky", (14, 15), (14, 15), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
 
 def create_clyde():
-    return Ghost("Clyde", (14, 16), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Clyde", (14, 16), (14, 16), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
