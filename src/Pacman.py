@@ -1,6 +1,19 @@
 import pyray as pr
 import time
 
+DURATION_EAT_PELLET = 0.5455
+DURATION_EAT_FRUIT = 1.0
+
+last_played_times = {
+    "eat_pellet": 0,
+    "eat_fruit": 0
+}
+
+def can_play_sound(sound_key, duration):
+    current_time = time.time()
+    last_played = last_played_times[sound_key]
+    return current_time - last_played > duration
+
 def create_pacman(grid_x, grid_y, cell_size=24, scale=2.85, vertical_offset=87, horizontal_offset=0):
     scaled_size = 13 * scale
     pacman = {
@@ -25,7 +38,7 @@ def create_pacman(grid_x, grid_y, cell_size=24, scale=2.85, vertical_offset=87, 
     }
     return pacman
 
-def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offset=0):
+def move_pacman(pacman, ghosts, eat_pellet_sound, eat_fruit_sound, grid, maze, vertical_offset=87, horizontal_offset=0):
     current_time = pr.get_time()
     grid_x, grid_y = pacman['grid_pos']
     current_dir = pacman['current_direction']
@@ -66,19 +79,28 @@ def move_pacman(pacman, ghosts, grid, maze, vertical_offset=87, horizontal_offse
 
         # check cell type for pellet consumption
         current_cell = grid[grid_y][grid_x]
-        if current_cell.cell_type == 0:
+        if current_cell.cell_type == 0:  # Small pellet
+            if can_play_sound("eat_pellet", DURATION_EAT_PELLET):
+                pr.play_sound(eat_pellet_sound)
+                last_played_times["eat_pellet"] = time.time()
             current_cell.cell_type = 2
-            pacman['score'] += 10 
-        elif current_cell.cell_type == 3:
+            pacman['score'] += 10
+        elif current_cell.cell_type == 3:  # Power pellet
+            if can_play_sound("eat_pellet", DURATION_EAT_PELLET):
+                pr.play_sound(eat_pellet_sound)
+                last_played_times["eat_pellet"] = time.time()
             current_cell.cell_type = 2
             pacman['score'] += 50
             pacman['ghosts_eaten'] = 0
             for ghost in ghosts:
                 ghost.mode = 'frightened'
                 ghost.frightened_start_time = time.time()
-        elif current_cell.cell_type == 4:
+        elif current_cell.cell_type == 4:  # Fruit
             if current_cell.fruit_type:
                 pacman['score'] += current_cell.fruit_type['score']
+            if can_play_sound("eat_fruit", DURATION_EAT_FRUIT):
+                pr.play_sound(eat_fruit_sound)
+                last_played_times["eat_fruit"] = time.time()
             current_cell.cell_type = 2
 
         # update actual position for rendering

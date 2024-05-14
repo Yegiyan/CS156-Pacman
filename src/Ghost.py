@@ -34,14 +34,15 @@ class Ghost:
             "Inky": [(29, 26), (26, 15), (26, 21)], # bottom-right
             "Clyde": [(29, 1), (23, 9), (29, 12)]   # bottom-left
         }
-        
+    
     def random_mode_duration(self):
         return random.uniform(7, 14)
 
-    def update_position(self, pacman, pacman_pos, pacman_direction, blinky_pos, grid, maze_module):
+    def update_position(self, pacman, pacman_pos, pacman_direction, blinky_pos, eat_ghost_sound, grid, maze_module):
         current_time = time.time()
         
         if self.mode == 'scatter' or self.mode == 'chase':
+            self.speed = 0.1425
             self.mode_timer += current_time - self.last_update_time
             if self.mode_timer >= self.mode_duration:
                 self.mode = 'chase' if self.mode == 'scatter' else 'scatter'
@@ -63,6 +64,9 @@ class Ghost:
                     pacman['score'] += 800
                 elif pacman['ghosts_eaten'] == 4:
                     pacman['score'] += 1600
+                if can_play_sound("eat_ghost", DURATION_EAT_GHOST):
+                    pr.play_sound(eat_ghost_sound)
+                    last_played_times["eat_ghost"] = time.time()
                 return
             
         if self.mode == 'eaten':
@@ -324,15 +328,24 @@ class Ghost:
             self.current_frame = 1 - self.current_frame  # toggle between frame 0 and 1
             self.animation_timer = 0  # reset timer
 
+DURATION_EAT_GHOST = 1.2
+last_played_times = {
+    "eat_ghost": 0
+}
+
+def can_play_sound(sound_key, duration):
+    current_time = time.time()
+    last_played = last_played_times[sound_key]
+    return current_time - last_played > duration
 
 def create_blinky():
-    return Ghost("Blinky", (14, 12), (14, 12), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Blinky", (14, 13), (14, 13), 24, pr.WHITE, (0, 80), (14, 14), 2.85, speed=0.1425)
 
 def create_pinky():
-    return Ghost("Pinky", (14, 11), (14, 11), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Pinky", (14, 12), (14, 12), 24, pr.WHITE, (0, 100), (14, 14), 2.85, speed=0.1425)
 
 def create_inky():
-    return Ghost("Inky", (14, 15), (14, 15), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Inky", (14, 14), (14, 14), 24, pr.WHITE, (0, 120), (14, 14), 2.85, speed=0.1425)
 
 def create_clyde():
-    return Ghost("Clyde", (14, 16), (14, 16), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)
+    return Ghost("Clyde", (14, 15), (14, 15), 24, pr.WHITE, (0, 140), (14, 14), 2.85, speed=0.1425)

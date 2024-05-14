@@ -24,7 +24,16 @@ maze_dest_rect = pr.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
 # load audio
 beginning_sound = pr.load_sound("../assets/audio/beginning.wav")
+victory_sound = pr.load_sound("../assets/audio/intermission.wav")
+death_sound = pr.load_sound("../assets/audio/death.wav")
+eat_fruit_sound = pr.load_sound("../assets/audio/eatfruit.wav")
+eat_pellet_sound = pr.load_sound("../assets/audio/eatpellet.wav")
+eat_ghost_sound = pr.load_sound("../assets/audio/eatghost.wav")
+    
 hasPlayedIntro = False
+
+isGameLost = False
+isGameWon = False
 
 menu_options = ["Play", "Exit"]
 current_option = 0  # start with 'Play' selected
@@ -48,10 +57,10 @@ def draw_menu():
     pr.begin_drawing()
     pr.clear_background(pr.BLACK)
     title_text = "PACMAN"
-    pr.draw_text_ex(font, title_text, pr.Vector2(220, 150), 40, 2, pr.YELLOW)
+    pr.draw_text_ex(font, title_text, pr.Vector2(210, 150), 40, 2, pr.YELLOW)
     for i, option in enumerate(menu_options):
-        color = pr.RED if i == current_option else pr.WHITE
-        x = 275
+        color = pr.WHITE if i == current_option else pr.GRAY
+        x = 265
         y = 300 + 50 * i
         pr.draw_text_ex(font, option, pr.Vector2(x, y), 30, 2, color)
     pr.end_drawing()
@@ -63,21 +72,38 @@ def draw_victory_screen():
     pr.draw_text_ex(font, victory_text, pr.Vector2(70, 300), 30, 2, pr.YELLOW)
 
     exit_button_text = "EXIT GAME"
-    exit_button_x = 210
-    exit_button_y = 400
-    pr.draw_text_ex(font, exit_button_text, pr.Vector2(exit_button_x, exit_button_y), 24, 2, pr.RED)
+    pr.draw_text_ex(font, exit_button_text, pr.Vector2(210, 400), 24, 2, pr.DARKBROWN)
     pr.end_drawing()
 
-    # check if the exit button is pressed
     if pr.is_key_pressed(pr.KEY_ENTER) or pr.is_key_pressed(pr.KEY_SPACE):
         pr.close_window()
-            
+
 def check_all_pellets_eaten(grid):
     for row in grid:
         for cell in row:
             if cell.cell_type == 0 or cell.cell_type == 3:
                 return False
     return True
+
+def draw_defeat_screen():
+    pr.begin_drawing()
+    pr.clear_background(pr.BLACK)
+    defeat_text = "GAME OVER! YOU LOST!"
+    pr.draw_text_ex(font, defeat_text, pr.Vector2(25, 300), 30, 2, pr.RED)
+
+    exit_button_text = "EXIT GAME"
+    pr.draw_text_ex(font, exit_button_text, pr.Vector2(210, 400), 24, 2, pr.DARKBROWN)
+    pr.end_drawing()
+
+    if pr.is_key_pressed(pr.KEY_ENTER) or pr.is_key_pressed(pr.KEY_SPACE):
+        pr.close_window()
+        
+def check_ghost_collision(pacman, ghosts):
+    pacman_pos = pacman['grid_pos']
+    for ghost in ghosts:
+        if ghost.mode in ['scatter', 'chase'] and ghost.grid_pos[1] == pacman_pos[0] and ghost.grid_pos[0] == pacman_pos[1]:
+            return True
+    return False
 
 # main menu loop
 while not pr.window_should_close():
@@ -103,6 +129,16 @@ while not pr.window_should_close():
     
     if check_all_pellets_eaten(grid):
         draw_victory_screen()
+        if isGameWon == False:
+            pr.play_sound(victory_sound)
+            isGameWon = True
+        continue
+    
+    if check_ghost_collision(pacman, ghosts):
+        draw_defeat_screen()
+        if isGameLost == False:
+            pr.play_sound(death_sound)
+            isGameLost = True
         continue
     
     if pr.is_key_pressed(pr.KEY_UP) or pr.is_key_pressed(pr.KEY_W):
@@ -114,12 +150,12 @@ while not pr.window_should_close():
     elif pr.is_key_pressed(pr.KEY_RIGHT) or pr.is_key_pressed(pr.KEY_D):
         pacman['queued_direction'] = 'RIGHT'
 
-    Pacman.move_pacman(pacman, ghosts, grid, Maze)
+    Pacman.move_pacman(pacman, ghosts, eat_pellet_sound, eat_fruit_sound, grid, Maze)
     
     # update ghosts
     for i, ghost in enumerate(ghosts):
         if current_time >= spawn_times[i]:
-            ghost.update_position(pacman, pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
+            ghost.update_position(pacman, pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, eat_ghost_sound, grid, Maze)
     
     # blinky.update_position(pacman, pacman['grid_pos'], pacman['current_direction'], blinky.grid_pos, grid, Maze)
     # print(f"Pacman Pos: {pacman['grid_pos']}")
@@ -137,10 +173,10 @@ while not pr.window_should_close():
     Maze.draw_grid(grid, texture_atlas)
     Pacman.draw_pacman(pacman, texture_atlas)
     
-    blinky.draw_ghost(texture_atlas)
-    pinky.draw_ghost(texture_atlas)
-    inky.draw_ghost(texture_atlas)
     clyde.draw_ghost(texture_atlas)
+    inky.draw_ghost(texture_atlas)
+    pinky.draw_ghost(texture_atlas)
+    blinky.draw_ghost(texture_atlas)
 
     pr.end_drawing()
     
