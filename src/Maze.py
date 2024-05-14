@@ -35,8 +35,8 @@ maze_layout = [
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 5, 5, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 0, 0, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
-    [2, 2, 2, 2, 2, 2, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 2, 2, 2, 2, 2, 2],
+    [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+    [2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1],
@@ -55,17 +55,14 @@ maze_layout = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
 
 class Cell:
-    def __init__(self, row, col, size=24, is_wall=False): # initialize new Cell instance with top left corner set as (row, col) -> (0, 0)
-        self.col = col  # x position in grid
-        self.row = row  # y position in grid
-        self.x = col * size  # x-coordinate in pixels
-        self.y = row * size  # y-coordinate in pixels
+    def __init__(self, row, col, size=24, cell_type=0):
+        self.col = col
+        self.row = row
+        self.x = col * size
+        self.y = row * size
         self.size = size
-        self.is_wall = is_wall
-        self.cost = float('inf')  # cost of getting to cell
-        self.previous = None  # store the path
-        self.visited = False
-        self.in_path = False # indicate if cell is part of the path
+        self.is_wall = cell_type == 1
+        self.cell_type = cell_type # indicate if cell is part of the path
 
     def __lt__(self, other):
         return self.cost < other.cost
@@ -86,11 +83,11 @@ def init_grid(screen_width, screen_height):
     grid_height = len(maze_layout)
     vertical_offset = 87  # center grid vertically
     
-    # initialize grid
-    grid = [[Cell(row, col, cell_size, is_wall=(maze_layout[row][col] == 1))
+    grid = [[Cell(row, col, cell_size, maze_layout[row][col])
              for col in range(grid_width)] for row in range(grid_height)]
     
     return grid
+
 
 def dijkstra(grid, start, end):
     start.cost = 0
@@ -169,9 +166,12 @@ def draw_grid(grid, vertical_offset=87):
     for row in grid:
         for cell in row:
             if cell.is_wall:
-                color = (0, 0, 0, 0)  # wall color (invisible atm)
-            elif cell.in_path:
-                color = pr.DARKGREEN  # path color
+                color = pr.DARKGRAY  # make walls visible for debugging
+            elif cell.cell_type == 0:  # pellet
+                pr.draw_circle(cell.x + cell.size // 2, cell.y + cell.size // 2 + vertical_offset, 3, pr.YELLOW)
+            elif cell.cell_type == 3:  # large pellet
+                pr.draw_circle(cell.x + cell.size // 2, cell.y + cell.size // 2 + vertical_offset, 6, pr.YELLOW)
+            elif cell.cell_type == 2 or cell.cell_type == 4 or cell.cell_type == 5:  # empty space, fruit, or ghost wall
+                continue  # No drawing needed for empty space or special handling for others
             else:
-                color = pr.DARKBROWN  # non-path color
-            pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, color)
+                pr.draw_rectangle_lines(cell.x, cell.y + vertical_offset, cell.size, cell.size, pr.GRAY)  # non-path color

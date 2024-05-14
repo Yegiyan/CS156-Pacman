@@ -34,6 +34,7 @@ class Ghost:
     def update_position(self, pacman_pos, grid, maze_module):
         current_time = time.time()
 
+        # check and update the path if needed
         if self.mode in ['frightened', 'scatter', 'chase']:
             if not self.path or (len(self.path) == 1 and self.move_timer >= 1):
                 if self.mode == 'frightened':
@@ -51,12 +52,15 @@ class Ghost:
             if self.move_timer >= 1:
                 if self.grid_pos != next_step:  # ensure it moves to the next grid cell
                     self.update_direction(next_step)  # update direction before changing position
-                    self.grid_pos = self.path.pop(0)
+                    if self.path:
+                        self.grid_pos = self.path.pop(0)
                 if self.path:
                     self.target_pos = self.path[0]
+                    
                 self.move_timer = 0  # reset move timer after aligning with grid
 
         self.move_timer += self.speed
+
 
     def update_direction(self, next_step):
         if next_step[0] < self.grid_pos[0]:

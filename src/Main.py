@@ -46,7 +46,7 @@ while not pr.window_should_close():
     elif pr.is_key_pressed(pr.KEY_RIGHT) or pr.is_key_pressed(pr.KEY_D):
         pacman['queued_direction'] = 'RIGHT'
 
-    Pacman.move_pacman(pacman, Maze)
+    Pacman.move_pacman(pacman, grid, Maze)
     
     blinky.update_position(pacman['grid_pos'], grid, Maze)
     pinky.update_position(pacman['grid_pos'], grid, Maze)
@@ -60,7 +60,10 @@ while not pr.window_should_close():
     pr.clear_background(pr.BLACK)
     pr.draw_texture_pro(maze_text, maze_src_rect, maze_dest_rect, pr.Vector2(0, 0), 0, pr.WHITE)
     pr.draw_text_ex(font, "HIGH SCORE", pr.Vector2(216, 10), 24, 2, pr.WHITE)
-    pr.draw_text_ex(font, "1UP", pr.Vector2(50, 10), 24, 2, pr.WHITE)
+    #pr.draw_text_ex(font, "1UP", pr.Vector2(50, 10), 24, 2, pr.WHITE)
+    
+    score_text = f"{pacman['score']}"
+    pr.draw_text_ex(font, score_text, pr.Vector2(300, 50), 24, 2, pr.WHITE)
 
     Maze.draw_grid(grid)
     Pacman.draw_pacman(pacman, texture_atlas)
