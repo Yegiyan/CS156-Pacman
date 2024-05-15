@@ -68,10 +68,10 @@ The score resets with each new power pellet consumed
 ### Fruit Bonuses
 Fruits appear near the center of the maze and provide additional points when eaten:
 
-- **Cherries**: 100 points (1st level)
-- **Strawberry**: 300 points (2nd level)
-- **Orange**: 500 points (3rd and 4th levels)
-- **Apple**: 700 points (5th and 6th levels)
+- **Cherries**: 100 points
+- **Strawberry**: 300 points
+- **Orange**: 500 points
+- **Apple**: 700 points
 
 ## PROJECT INFO
 
@@ -79,3 +79,5 @@ Fruits appear near the center of the maze and provide additional points when eat
 - What representation scheme we used
 - What search scheme we used
     - Will ask what lines of code do the searching
+- Search space of the maze (actual number (it's gonna be big))
+    - There are 308 total cells that the ghosts can traverse
