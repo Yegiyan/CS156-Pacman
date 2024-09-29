@@ -27,10 +27,4 @@ This is a project for the CS-156 course, where we're creating a Pacman applicati
 - Python Binding of Raylib Docs: https://electronstudio.github.io/raylib-python-cffi/
 - Pyray examples: https://github.com/electronstudio/raylib-python-cffi/tree/master/examples
 
-## Contibutors
-- Hike Yegiyan
-- Umesh Singh
-- Nirupama Tippabhatla
-- Rohan Mehta
-
 ![Image](https://i.imgur.com/AzHE0X7_d.webp?maxwidth=760&fidelity=grand)
